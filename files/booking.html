@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Appointment — AI-AMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a6b3c;
+    --green-dark: #0f4526;
+    --green-light: #2a8a50;
+    --gold: #c9973a;
+    --gold-light: #e8b84b;
+    --gold-pale: #fdf3e0;
+    --white: #ffffff;
+    --off-white: #f8f6f1;
+    --text: #1a1a1a;
+    --text-muted: #5a6a5e;
+    --border: #d4e8da;
+    --error: #d94040;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--green-dark);
+    padding: 16px 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--gold);
+  }
+
+  .topbar-brand {
+    display: flex; align-items: center; gap: 12px;
+    text-decoration: none;
+  }
+
+  .topbar-logo {
+    width: 38px; height: 38px; background: var(--gold);
+    border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-weight: 700;
+    font-size: 18px; color: var(--green-dark);
+  }
+
+  .topbar-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px; color: var(--white); font-weight: 700;
+  }
+
+  .topbar-sub { font-size: 12px; color: var(--gold-light); display: block; }
+
+  .topbar-back {
+    color: rgba(255,255,255,0.7); text-decoration: none;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.2s;
+  }
+  .topbar-back:hover { color: var(--gold-light); }
+
+  /* PROGRESS */
+  .progress-bar {
+    background: var(--green);
+    padding: 20px 5%;
+  }
+
+  .progress-steps {
+    display: flex; align-items: center; gap: 0;
+    max-width: 700px; margin: 0 auto;
+  }
+
+  .prog-step {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1;
+    position: relative;
+  }
+
+  .prog-step:not(:last-child)::after {
+    content: '';
+    position: absolute; left: 36px; top: 18px;
+    width: calc(100% - 40px); height: 2px;
+    background: rgba(255,255,255,0.2);
+    z-index: 0;
+  }
+
+  .prog-step.done:not(:last-child)::after,
+  .prog-step.active:not(:last-child)::after {
+    background: rgba(255,255,255,0.5);
+  }
+
+  .prog-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5);
+    flex-shrink: 0; z-index: 1;
+    transition: all 0.3s;
+  }
+
+  .prog-step.active .prog-circle {
+    background: var(--gold); border-color: var(--gold);
+    color: var(--green-dark);
+  }
+
+  .prog-step.done .prog-circle {
+    background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6);
+    color: white; font-size: 16px;
+  }
+
+  .prog-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    display: none;
+  }
+
+  @media (min-width: 600px) { .prog-label { display: block; } }
+
+  .prog-step.active .prog-label { color: var(--gold-light); }
+  .prog-step.done .prog-label { color: rgba(255,255,255,0.7); }
+
+  /* LAYOUT */
+  .booking-layout {
+    display: grid; grid-template-columns: 1fr 340px;
+    gap: 32px; padding: 40px 5%; max-width: 1100px; margin: 0 auto;
+  }
+
+  @media (max-width: 860px) {
+    .booking-layout { grid-template-columns: 1fr; }
+    .booking-sidebar { order: -1; }
+  }
+
+  /* STEP PANELS */
+  .step-panel {
+    background: var(--white); border-radius: 16px; padding: 40px;
+    border: 1px solid var(--border);
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .step-panel.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700;
+    color: var(--green-dark); margin-bottom: 6px;
+  }
+
+  .panel-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 32px; }
+
+  /* FORM ELEMENTS */
+  .form-group { margin-bottom: 22px; }
+
+  label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--green-dark); margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  input[type="text"], input[type="tel"], select {
+    width: 100%; padding: 13px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white); color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,107,60,0.1);
+    background: var(--white);
+  }
+
+  .input-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+  /* OTP BOXES */
+  .otp-boxes {
+    display: flex; gap: 12px; margin-bottom: 8px;
+  }
+
+  .otp-box {
+    width: 64px; height: 64px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    text-align: center; font-size: 24px; font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    color: var(--green-dark);
+    background: var(--off-white);
+    transition: all 0.2s; outline: none;
+  }
+  .otp-box:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,107,60,0.1);
+    background: var(--white);
+  }
+
+  .otp-sent-msg {
+    background: #e8f8ef; border: 1px solid #a8dbb8;
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 13px; color: var(--green);
+    font-weight: 500; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* SERVICE CARDS */
+  .service-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+  }
+
+  .service-card {
+    border: 2px solid var(--border); border-radius: 10px;
+    padding: 16px; cursor: pointer;
+    transition: all 0.2s;
+    background: var(--off-white);
+  }
+
+  .service-card:hover {
+    border-color: var(--green-light);
+    background: #f0f8f3;
+  }
+
+  .service-card.selected {
+    border-color: var(--green);
+    background: #e8f8ef;
+  }
+
+  .service-card input { display: none; }
+
+  .service-icon { font-size: 24px; margin-bottom: 8px; display: block; }
+  .service-name { font-size: 13px; font-weight: 600; color: var(--green-dark); margin-bottom: 4px; }
+  .service-duration { font-size: 11px; color: var(--text-muted); }
+
+  .service-card.selected .service-name { color: var(--green); }
+
+  /* BRANCH CARDS */
+  .branch-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .branch-card {
+    border: 2px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; cursor: pointer;
+    transition: all 0.2s; background: var(--off-white);
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .branch-card:hover { border-color: var(--green-light); background: #f0f8f3; }
+  .branch-card.selected { border-color: var(--green); background: #e8f8ef; }
+  .branch-card input { display: none; }
+
+  .branch-badge {
+    width: 48px; height: 48px; border-radius: 10px;
+    background: var(--green); display: flex; align-items: center;
+    justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+
+  .branch-info { flex: 1; }
+  .branch-name { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+  .branch-address { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .branch-meta { text-align: right; }
+
+  .congestion-pill {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 4px;
+  }
+  .cong-low { background: #e8f8ef; color: #1a6b3c; }
+  .cong-med { background: #fff8e0; color: #9c6d00; }
+  .cong-high { background: #ffe8e8; color: #a33; }
+
+  .branch-dist { font-size: 11px; color: var(--text-muted); }
+
+  .ai-rec-badge {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: var(--green-dark);
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 3px 10px; border-radius: 20px;
+    display: inline-block; margin-top: 4px;
+  }
+
+  /* TIME SLOTS */
+  .slots-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+
+  .slot {
+    border: 2px solid var(--border); border-radius: 8px;
+    padding: 12px 8px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--off-white);
+  }
+
+  .slot:hover:not(.taken) { border-color: var(--green); background: #f0f8f3; }
+  .slot.selected { border-color: var(--green); background: #e8f8ef; }
+  .slot.taken { opacity: 0.4; cursor: not-allowed; background: #f0f0f0; }
+
+  .slot-time { font-size: 13px; font-weight: 700; color: var(--green-dark); }
+  .slot-avail { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+  .slot.taken .slot-time { text-decoration: line-through; color: #aaa; }
+  .slot.taken .slot-avail { color: #ccc; }
+
+  /* CONFIRM SCREEN */
+  .confirm-box {
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    border-radius: 14px; padding: 32px; text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .confirm-ref-label { font-size: 12px; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .confirm-ref {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px; font-weight: 700; color: var(--gold-light);
+    letter-spacing: 3px; margin-bottom: 8px;
+  }
+  .confirm-sms { font-size: 13px; color: rgba(255,255,255,0.7); }
+
+  .confirm-details {
+    border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; margin-bottom: 24px;
+  }
+
+  .confirm-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .confirm-row:last-child { border-bottom: none; }
+
+  .confirm-key { font-size: 13px; color: var(--text-muted); }
+  .confirm-val { font-size: 14px; font-weight: 600; color: var(--green-dark); }
+
+  /* BUTTONS */
+  .step-btns {
+    display: flex; gap: 12px; margin-top: 32px;
+    justify-content: space-between;
+  }
+
+  .btn-next {
+    background: var(--green);
+    color: var(--white); padding: 14px 32px;
+    border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.25s; display: flex; align-items: center; gap: 8px;
+    margin-left: auto;
+  }
+  .btn-next:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+  .btn-back {
+    background: transparent; color: var(--text-muted);
+    padding: 14px 24px; border: 2px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--green); color: var(--green); }
+
+  .btn-home {
+    background: var(--gold); color: var(--green-dark);
+    padding: 14px 32px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.25s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-home:hover { background: var(--gold-light); }
+
+  /* SIDEBAR */
+  .booking-sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+  .sidebar-card {
+    background: var(--white); border-radius: 14px; padding: 24px;
+    border: 1px solid var(--border);
+  }
+
+  .sidebar-title {
+    font-size: 13px; font-weight: 700; color: var(--green-dark);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .summary-item {
+    display: flex; justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(212,232,218,0.5);
+    font-size: 13px;
+  }
+  .summary-item:last-child { border-bottom: none; }
+  .summary-item .s-key { color: var(--text-muted); }
+  .summary-item .s-val { font-weight: 600; color: var(--green-dark); text-align: right; max-width: 60%; }
+
+  .info-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .info-item {
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  .info-item .i-icon { font-size: 16px; margin-top: 1px; }
+  .info-item .i-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .info-item .i-text strong { color: var(--green-dark); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-brand">
+    <div class="topbar-logo">NS</div>
+    <div>
+      <div class="topbar-name">National Savings</div>
+      <span class="topbar-sub">AI Appointment System</span>
+    </div>
+  </a>
+  <a href="index.html" class="topbar-back">← Back to Home</a>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="progress-steps">
+    <div class="prog-step active" id="prog-1">
+      <div class="prog-circle">1</div>
+      <span class="prog-label">Identity</span>
+    </div>
+    <div class="prog-step" id="prog-2">
+      <div class="prog-circle">2</div>
+      <span class="prog-label">OTP</span>
+    </div>
+    <div class="prog-step" id="prog-3">
+      <div class="prog-circle">3</div>
+      <span class="prog-label">Service</span>
+    </div>
+    <div class="prog-step" id="prog-4">
+      <div class="prog-circle">4</div>
+      <span class="prog-label">Branch</span>
+    </div>
+    <div class="prog-step" id="prog-5">
+      <div class="prog-circle">5</div>
+      <span class="prog-label">Slot</span>
+    </div>
+    <div class="prog-step" id="prog-6">
+      <div class="prog-circle">6</div>
+      <span class="prog-label">Confirm</span>
+    </div>
+  </div>
+</div>
+
+<div class="booking-layout">
+  <!-- MAIN PANELS -->
+  <div>
+
+    <!-- STEP 1: CNIC -->
+    <div class="step-panel active" id="step-1">
+      <div class="panel-title">Enter Your CNIC</div>
+      <div class="panel-sub">Please provide your 13-digit Computerised National Identity Card number to continue.</div>
+      <div class="form-group">
+        <label>CNIC Number</label>
+        <input type="text" id="cnic-input" maxlength="15" placeholder="XXXXX-XXXXXXX-X" oninput="formatCNIC(this)">
+        <div class="input-hint">Format: 35201-1234567-3 (with dashes)</div>
+      </div>
+      <div class="form-group">
+        <label>City</label>
+        <select id="city-select">
+          <option value="">— Select your city —</option>
+          <option>Islamabad</option>
+          <option>Karachi</option>
+          <option>Lahore</option>
+          <option>Rawalpindi</option>
+          <option>Faisalabad</option>
+          <option>Multan</option>
+          <option>Peshawar</option>
+          <option>Quetta</option>
+          <option>Hyderabad</option>
+        </select>
+        <div class="input-hint">Used by the AI to recommend nearby branches</div>
+      </div>
+      <div class="step-btns">
+        <button class="btn-next" onclick="goStep(2)">Send OTP →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: OTP -->
+    <div class="step-panel" id="step-2">
+      <div class="panel-title">Verify Your Identity</div>
+      <div class="panel-sub">A 4-digit OTP has been sent to your registered mobile number.</div>
+      <div class="otp-sent-msg">
+        📱 OTP sent to the number registered with your CNIC. It expires in 5 minutes.
+      </div>
+      <div class="form-group">
+        <label>Enter OTP</label>
+        <div class="otp-boxes">
+          <input type="text" class="otp-box" maxlength="1" oninput="moveOTP(this, 1)">
+          <input type="text" class="otp-box" maxlength="1" oninput="moveOTP(this, 2)">
+          <input type="text" class="otp-box" maxlength="1" oninput="moveOTP(this, 3)">
+          <input type="text" class="otp-box" maxlength="1" oninput="moveOTP(this, 4)">
+        </div>
+        <div class="input-hint">For the demo, enter any 4 digits.</div>
+      </div>
+      <div class="step-btns">
+        <button class="btn-back" onclick="goStep(1)">← Back</button>
+        <button class="btn-next" onclick="goStep(3)">Verify →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: SERVICE -->
+    <div class="step-panel" id="step-3">
+      <div class="panel-title">Select a Service</div>
+      <div class="panel-sub">Choose the CDNS service you need. Average durations are shown to help you plan.</div>
+      <div class="service-grid">
+        <label class="service-card" onclick="selectService(this, 'New Account (DSC/SSC/RIC)', '20–25 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">📄</span>
+          <div class="service-name">New Account Opening</div>
+          <div class="service-duration">DSC / SSC / RIC · 20–25 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'Savings Account', '15–20 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">🏦</span>
+          <div class="service-name">Savings Account</div>
+          <div class="service-duration">Account Opening · 15–20 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'Profit Payment Collection', '8–12 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">💰</span>
+          <div class="service-name">Profit Payment</div>
+          <div class="service-duration">Collection · 8–12 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'Withdrawal / Encashment', '10–15 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">💳</span>
+          <div class="service-name">Withdrawal</div>
+          <div class="service-duration">Encashment · 10–15 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'Account Transfer', '15–20 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">🔄</span>
+          <div class="service-name">Account Transfer</div>
+          <div class="service-duration">Inter-Branch · 15–20 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'Nominee / Address Change', '10–15 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">✏️</span>
+          <div class="service-name">Nominee / Address</div>
+          <div class="service-duration">Account Update · 10–15 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'Balance / Statement Inquiry', '8–10 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">📊</span>
+          <div class="service-name">Balance Inquiry</div>
+          <div class="service-duration">Statement · 8–10 min</div>
+        </label>
+        <label class="service-card" onclick="selectService(this, 'General Inquiry', '5–10 min')">
+          <input type="radio" name="service">
+          <span class="service-icon">💬</span>
+          <div class="service-name">General Inquiry</div>
+          <div class="service-duration">Information · 5–10 min</div>
+        </label>
+      </div>
+      <div class="step-btns">
+        <button class="btn-back" onclick="goStep(2)">← Back</button>
+        <button class="btn-next" onclick="goStep(4)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: BRANCH -->
+    <div class="step-panel" id="step-4">
+      <div class="panel-title">Choose a Branch</div>
+      <div class="panel-sub">The AI Geo-Smart Assistant has ranked nearby branches by congestion score.</div>
+      <div style="background: #fff8e0; border: 1px solid var(--gold); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #7a5500; margin-bottom: 20px; display: flex; gap: 8px;">
+        🤖 <span><strong>AI Recommendation:</strong> Based on your location and current demand forecasts, F-8 Markaz is your best option today.</span>
+      </div>
+      <div class="branch-list">
+        <label class="branch-card selected" onclick="selectBranch(this, 'NSC F-8 Markaz, Islamabad')">
+          <input type="radio" name="branch" checked>
+          <div class="branch-badge">🏛️</div>
+          <div class="branch-info">
+            <div class="branch-name">NSC F-8 Markaz</div>
+            <div class="branch-address">F-8 Markaz, Islamabad · 1.2 km away</div>
+            <span class="ai-rec-badge">⭐ AI Recommended</span>
+          </div>
+          <div class="branch-meta">
+            <div class="congestion-pill cong-low">Low</div>
+            <div class="branch-dist">8 slots left</div>
+          </div>
+        </label>
+        <label class="branch-card" onclick="selectBranch(this, 'NSC Blue Area, Islamabad')">
+          <input type="radio" name="branch">
+          <div class="branch-badge">🏢</div>
+          <div class="branch-info">
+            <div class="branch-name">NSC Blue Area</div>
+            <div class="branch-address">Jinnah Ave, Blue Area · 3.4 km away</div>
+          </div>
+          <div class="branch-meta">
+            <div class="congestion-pill cong-med">Medium</div>
+            <div class="branch-dist">4 slots left</div>
+          </div>
+        </label>
+        <label class="branch-card" onclick="selectBranch(this, 'NSC G-9 Markaz, Islamabad')">
+          <input type="radio" name="branch">
+          <div class="branch-badge">🏪</div>
+          <div class="branch-info">
+            <div class="branch-name">NSC G-9 Markaz</div>
+            <div class="branch-address">G-9/4 Markaz, Islamabad · 5.1 km away</div>
+          </div>
+          <div class="branch-meta">
+            <div class="congestion-pill cong-high">High</div>
+            <div class="branch-dist">1 slot left</div>
+          </div>
+        </label>
+        <label class="branch-card" onclick="selectBranch(this, 'NSC I-8 Markaz, Islamabad')">
+          <input type="radio" name="branch">
+          <div class="branch-badge">🏬</div>
+          <div class="branch-info">
+            <div class="branch-name">NSC I-8 Markaz</div>
+            <div class="branch-address">I-8/2, Islamabad · 7.8 km away</div>
+          </div>
+          <div class="branch-meta">
+            <div class="congestion-pill cong-low">Low</div>
+            <div class="branch-dist">12 slots left</div>
+          </div>
+        </label>
+      </div>
+      <div class="step-btns">
+        <button class="btn-back" onclick="goStep(3)">← Back</button>
+        <button class="btn-next" onclick="goStep(5)">Next →</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: TIME SLOT -->
+    <div class="step-panel" id="step-5">
+      <div class="panel-title">Select a Time Slot</div>
+      <div class="panel-sub">Available slots for <strong id="slot-branch-name">NSC F-8 Markaz</strong> — today. Greyed slots are already booked.</div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="text" id="date-input" value="">
+      </div>
+      <div class="slots-grid" id="slots-grid">
+        <!-- Slots generated by JS -->
+      </div>
+      <div class="step-btns">
+        <button class="btn-back" onclick="goStep(4)">← Back</button>
+        <button class="btn-next" onclick="goStep(6)">Confirm Booking →</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: CONFIRMATION -->
+    <div class="step-panel" id="step-6">
+      <div class="panel-title">Booking Confirmed! 🎉</div>
+      <div class="panel-sub">Your appointment is confirmed. Show this reference number at the branch.</div>
+      <div class="confirm-box">
+        <div class="confirm-ref-label">Reference Number</div>
+        <div class="confirm-ref" id="ref-number">NS-2026-XXXX</div>
+        <div class="confirm-sms">📱 Also sent to your registered mobile via SMS</div>
+      </div>
+      <div class="confirm-details" id="confirm-details">
+        <!-- Filled by JS -->
+      </div>
+      <div style="background: #fff8e0; border: 1px solid var(--gold); border-radius: 8px; padding: 14px 18px; font-size: 13px; color: #7a5500; margin-bottom: 20px;">
+        ⏰ Reminders will be sent <strong>24 hours</strong> and <strong>1 hour</strong> before your appointment.
+      </div>
+      <div class="step-btns" style="justify-content: center;">
+        <a href="index.html" class="btn-home">← Back to Home</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="booking-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-title">Your Booking Summary</div>
+      <div class="summary-item"><span class="s-key">CNIC</span><span class="s-val" id="s-cnic">—</span></div>
+      <div class="summary-item"><span class="s-key">City</span><span class="s-val" id="s-city">—</span></div>
+      <div class="summary-item"><span class="s-key">Service</span><span class="s-val" id="s-service">—</span></div>
+      <div class="summary-item"><span class="s-key">Branch</span><span class="s-val" id="s-branch">—</span></div>
+      <div class="summary-item"><span class="s-key">Time Slot</span><span class="s-val" id="s-slot">—</span></div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">What to Bring</div>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="i-icon">🪪</span>
+          <div class="i-text"><strong>Original CNIC</strong> — must be presented at the counter</div>
+        </div>
+        <div class="info-item">
+          <span class="i-icon">📖</span>
+          <div class="i-text"><strong>Passbook / Certificate</strong> — if applicable for your service</div>
+        </div>
+        <div class="info-item">
+          <span class="i-icon">📸</span>
+          <div class="i-text"><strong>2 Passport Photos</strong> — required for new account opening</div>
+        </div>
+        <div class="info-item">
+          <span class="i-icon">⏰</span>
+          <div class="i-text">Arrive <strong>5–10 minutes early</strong>. 15-min grace period applies after that.</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Operating Hours</div>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="i-icon">🕐</span>
+          <div class="i-text"><strong>Monday – Friday</strong><br>9:00 AM – 3:00 PM</div>
+        </div>
+        <div class="info-item">
+          <span class="i-icon">❌</span>
+          <div class="i-text">Closed on <strong>weekends</strong> and <strong>public holidays</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let booking = { cnic: '', city: '', service: '', duration: '', branch: 'NSC F-8 Markaz, Islamabad', slot: '' };
+  let currentStep = 1;
+
+  // Set today's date
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('date-input').value = dateStr;
+
+  // Generate slots
+  const takenSlots = [0, 2, 5, 8, 11];
+  const slotsGrid = document.getElementById('slots-grid');
+  const times = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30'];
+  times.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'slot' + (takenSlots.includes(i) ? ' taken' : '');
+    div.innerHTML = `<div class="slot-time">${t}</div><div class="slot-avail">${takenSlots.includes(i) ? 'Booked' : 'Available'}</div>`;
+    if (!takenSlots.includes(i)) {
+      div.onclick = () => selectSlot(div, t);
+    }
+    slotsGrid.appendChild(div);
+  });
+
+  function goStep(n) {
+    // Update CNIC display
+    const cnic = document.getElementById('cnic-input').value;
+    const city = document.getElementById('city-select').value;
+    if (cnic) { booking.cnic = cnic; document.getElementById('s-cnic').textContent = cnic; }
+    if (city) { booking.city = city; document.getElementById('s-city').textContent = city; }
+
+    // Progress update
+    for (let i = 1; i <= 6; i++) {
+      const p = document.getElementById('prog-' + i);
+      p.className = 'prog-step' + (i < n ? ' done' : i === n ? ' active' : '');
+      if (i < n) p.querySelector('.prog-circle').textContent = '✓';
+      else p.querySelector('.prog-circle').textContent = i;
+    }
+
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step-' + n).classList.add('active');
+
+    if (n === 6) buildConfirmation();
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function formatCNIC(el) {
+    let v = el.value.replace(/\D/g, '');
+    if (v.length > 5) v = v.slice(0,5) + '-' + v.slice(5);
+    if (v.length > 13) v = v.slice(0,13) + '-' + v.slice(13);
+    el.value = v.slice(0, 15);
+  }
+
+  function moveOTP(el, idx) {
+    el.value = el.value.replace(/\D/g, '').slice(0,1);
+    const boxes = document.querySelectorAll('.otp-box');
+    if (el.value && idx < 4) boxes[idx].focus();
+  }
+
+  function selectService(card, name, dur) {
+    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    booking.service = name; booking.duration = dur;
+    document.getElementById('s-service').textContent = name;
+  }
+
+  function selectBranch(card, name) {
+    document.querySelectorAll('.branch-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    booking.branch = name;
+    document.getElementById('s-branch').textContent = name;
+    document.getElementById('slot-branch-name').textContent = name.split(',')[0];
+  }
+
+  function selectSlot(div, time) {
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+    div.classList.add('selected');
+    booking.slot = time;
+    document.getElementById('s-slot').textContent = time;
+  }
+
+  function buildConfirmation() {
+    const ref = 'NS-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('ref-number').textContent = ref;
+    const d = document.getElementById('confirm-details');
+    const rows = [
+      ['Service', booking.service || 'Profit Payment Collection'],
+      ['Branch', booking.branch || 'NSC F-8 Markaz, Islamabad'],
+      ['Date', new Date().toLocaleDateString('en-PK', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })],
+      ['Time Slot', booking.slot || '10:00 AM'],
+      ['Duration', booking.duration || '8–12 min'],
+      ['Channel', 'Web Portal'],
+    ];
+    d.innerHTML = rows.map(([k, v]) => `<div class="confirm-row"><span class="confirm-key">${k}</span><span class="confirm-val">${v}</span></div>`).join('');
+  }
+</script>
+</body>
+</html>

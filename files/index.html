@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-AMS — National Savings Pakistan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a6b3c;
+    --green-dark: #0f4526;
+    --green-light: #2a8a50;
+    --gold: #c9973a;
+    --gold-light: #e8b84b;
+    --gold-pale: #fdf3e0;
+    --white: #ffffff;
+    --off-white: #f8f6f1;
+    --text: #1a1a1a;
+    --text-muted: #5a6a5e;
+    --border: #d4e8da;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(15, 69, 38, 0.97);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%;
+    height: 68px;
+    border-bottom: 2px solid var(--gold);
+  }
+
+  .nav-brand {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .nav-logo {
+    width: 44px; height: 44px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900;
+    color: var(--green-dark);
+    font-family: 'Playfair Display', serif;
+  }
+
+  .nav-title {
+    display: flex; flex-direction: column;
+  }
+
+  .nav-title span:first-child {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px; color: var(--white); font-weight: 700; letter-spacing: 0.5px;
+  }
+
+  .nav-title span:last-child {
+    font-size: 11px; color: var(--gold-light); letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex; align-items: center; gap: 32px;
+  }
+
+  .nav-links a {
+    color: rgba(255,255,255,0.8); text-decoration: none;
+    font-size: 14px; font-weight: 500; letter-spacing: 0.3px;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold-light); }
+
+  .nav-cta {
+    background: var(--gold) !important;
+    color: var(--green-dark) !important;
+    padding: 9px 22px;
+    border-radius: 6px;
+    font-weight: 600 !important;
+    transition: background 0.2s !important;
+  }
+  .nav-cta:hover { background: var(--gold-light) !important; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 50%, #1e7a45 100%);
+    display: flex; align-items: center;
+    padding: 100px 5% 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; top: -100px; right: -100px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(201,151,58,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -80px; left: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(201,151,58,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  /* decorative grid */
+  .hero-grid {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-content {
+    max-width: 620px; position: relative; z-index: 2;
+    animation: fadeUp 0.9s ease both;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201,151,58,0.2);
+    border: 1px solid rgba(201,151,58,0.4);
+    border-radius: 30px;
+    padding: 6px 16px;
+    margin-bottom: 28px;
+    font-size: 12px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--gold-light);
+  }
+
+  .hero-badge::before {
+    content: ''; width: 8px; height: 8px;
+    background: var(--gold-light); border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(38px, 5vw, 64px);
+    font-weight: 900;
+    line-height: 1.08;
+    color: var(--white);
+    margin-bottom: 22px;
+    letter-spacing: -1px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--gold-light);
+  }
+
+  .hero p {
+    font-size: 17px; line-height: 1.7;
+    color: rgba(255,255,255,0.78);
+    margin-bottom: 40px; max-width: 500px;
+    font-weight: 300;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--green-dark);
+    padding: 15px 34px;
+    border-radius: 8px;
+    font-weight: 700; font-size: 15px;
+    text-decoration: none;
+    transition: all 0.25s;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 2px solid var(--gold);
+  }
+  .btn-primary:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(201,151,58,0.4);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    padding: 15px 34px;
+    border-radius: 8px;
+    font-weight: 600; font-size: 15px;
+    text-decoration: none;
+    transition: all 0.25s;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 2px solid rgba(255,255,255,0.35);
+  }
+  .btn-secondary:hover {
+    border-color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .hero-stats {
+    display: flex; gap: 40px; margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    flex-wrap: wrap;
+  }
+
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px; font-weight: 700;
+    color: var(--gold-light);
+  }
+
+  .stat-label {
+    font-size: 12px; color: rgba(255,255,255,0.6);
+    letter-spacing: 0.5px; text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* FLOATING CARD */
+  .hero-visual {
+    position: absolute; right: 6%; top: 50%;
+    transform: translateY(-50%);
+    width: 360px;
+    animation: fadeUp 0.9s 0.3s ease both;
+    z-index: 2;
+  }
+
+  .queue-card {
+    background: rgba(255,255,255,0.96);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+  }
+
+  .queue-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .queue-card-title {
+    font-weight: 700; font-size: 14px; color: var(--green-dark);
+  }
+
+  .live-badge {
+    background: #e8f8ef; color: #1a6b3c;
+    font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 20px; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .live-badge::before {
+    content: ''; width: 6px; height: 6px;
+    background: #2a8a50; border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  .token-display {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
+  .token-label { font-size: 11px; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase; }
+  .token-num { font-family: 'Playfair Display', serif; font-size: 52px; color: var(--gold-light); font-weight: 700; line-height: 1.1; }
+  .token-service { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+
+  .queue-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .queue-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--off-white);
+  }
+
+  .q-token { font-weight: 700; font-size: 15px; color: var(--green-dark); }
+  .q-service { font-size: 12px; color: var(--text-muted); }
+  .q-wait { font-size: 12px; font-weight: 600; color: var(--gold); }
+
+  /* STEPS */
+  .steps-section {
+    padding: 100px 5%;
+    background: var(--white);
+  }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--green);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(30px, 3.5vw, 44px);
+    font-weight: 700; line-height: 1.15;
+    color: var(--green-dark);
+    max-width: 520px;
+    margin-bottom: 60px;
+  }
+
+  .steps-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+    background: var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+
+  .step {
+    background: var(--white);
+    padding: 40px 32px;
+    position: relative;
+    transition: background 0.25s;
+  }
+  .step:hover { background: #f0f8f3; }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px; font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+
+  .step-icon {
+    width: 48px; height: 48px;
+    background: var(--green);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .step h3 { font-size: 17px; font-weight: 700; color: var(--green-dark); margin-bottom: 10px; }
+  .step p { font-size: 14px; line-height: 1.65; color: var(--text-muted); }
+
+  /* AI AGENTS */
+  .agents-section {
+    padding: 100px 5%;
+    background: var(--green-dark);
+    position: relative; overflow: hidden;
+  }
+
+  .agents-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(201,151,58,0.08) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  .agents-section .section-label { color: var(--gold-light); }
+  .agents-section .section-title { color: var(--white); }
+
+  .agents-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    position: relative; z-index: 1;
+  }
+
+  .agent-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 32px;
+    transition: all 0.3s;
+  }
+  .agent-card:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(201,151,58,0.4);
+    transform: translateY(-4px);
+  }
+
+  .agent-number {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .agent-icon {
+    font-size: 36px; margin-bottom: 16px;
+    display: block;
+  }
+
+  .agent-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .agent-card .agent-subtitle {
+    font-size: 12px; color: var(--gold);
+    font-weight: 600; letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+
+  .agent-card p { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.65; }
+
+  .agent-tag {
+    display: inline-block; margin-top: 16px;
+    background: rgba(201,151,58,0.15);
+    border: 1px solid rgba(201,151,58,0.3);
+    color: var(--gold-light);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    padding: 5px 12px; border-radius: 20px;
+  }
+
+  /* KPI SECTION */
+  .kpi-section {
+    padding: 100px 5%;
+    background: var(--off-white);
+  }
+
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+    margin-top: 50px;
+  }
+
+  .kpi-card {
+    background: var(--white);
+    border-radius: 14px; padding: 28px 24px;
+    border: 1px solid var(--border);
+    transition: all 0.25s;
+  }
+  .kpi-card:hover {
+    box-shadow: 0 8px 24px rgba(26,107,60,0.1);
+    border-color: var(--green-light);
+    transform: translateY(-2px);
+  }
+
+  .kpi-icon { font-size: 28px; margin-bottom: 14px; }
+  .kpi-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+  .kpi-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .kpi-target {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--green); font-weight: 600;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 100px 5%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute; top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.2) 0%, transparent 60%);
+  }
+
+  .cta-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px); font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+
+  .cta-section p {
+    font-size: 17px; color: rgba(15,69,38,0.75);
+    margin-bottom: 36px; position: relative; z-index: 1;
+  }
+
+  .cta-buttons {
+    display: flex; gap: 16px; justify-content: center;
+    flex-wrap: wrap; position: relative; z-index: 1;
+  }
+
+  .btn-dark {
+    background: var(--green-dark);
+    color: var(--white);
+    padding: 16px 38px;
+    border-radius: 8px; font-weight: 700; font-size: 15px;
+    text-decoration: none;
+    transition: all 0.25s;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 2px solid var(--green-dark);
+  }
+  .btn-dark:hover {
+    background: var(--green);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15,69,38,0.3);
+  }
+
+  .btn-outline-dark {
+    background: transparent;
+    color: var(--green-dark);
+    padding: 16px 38px;
+    border-radius: 8px; font-weight: 600; font-size: 15px;
+    text-decoration: none;
+    transition: all 0.25s;
+    border: 2px solid var(--green-dark);
+  }
+  .btn-outline-dark:hover {
+    background: rgba(15,69,38,0.08);
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--green-dark);
+    padding: 40px 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 2px solid var(--gold);
+    flex-wrap: wrap; gap: 16px;
+  }
+
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; color: var(--white); font-weight: 700;
+  }
+
+  .footer-meta { font-size: 13px; color: rgba(255,255,255,0.5); }
+  .footer-version {
+    background: rgba(201,151,58,0.2);
+    color: var(--gold-light);
+    font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(201,151,58,0.3);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 1100px) {
+    .hero-visual { display: none; }
+  }
+
+  @media (max-width: 768px) {
+    .steps-grid, .agents-grid, .kpi-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-stats { gap: 24px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">NS</div>
+    <div class="nav-title">
+      <span>National Savings Pakistan</span>
+      <span>AI-AMS — Appointment System</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="#how-it-works">How It Works</a>
+    <a href="#ai-agents">AI Agents</a>
+    <a href="#kpis">Dashboard</a>
+    <a href="staff-login.html" class="nav-cta">Staff Login</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Now Available — Pilot Phase Islamabad</div>
+    <h1>Smart Appointments for <em>Every</em> National Savings Branch</h1>
+    <p>Eliminate branch congestion across 353 NSCs. AI-powered scheduling ensures citizens arrive to a ready counter — no waiting, no uncertainty.</p>
+    <div class="hero-actions">
+      <a href="booking.html" class="btn-primary">📅 Book an Appointment</a>
+      <a href="staff-login.html" class="btn-secondary">🔐 Staff Portal →</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num">353</span>
+        <span class="stat-label">NSC Branches</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">12</span>
+        <span class="stat-label">Regions</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">28K+</span>
+        <span class="stat-label">Daily Visitors</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">&lt;15m</span>
+        <span class="stat-label">Target Wait Time</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="queue-card">
+      <div class="queue-card-header">
+        <span class="queue-card-title">Live Queue — Islamabad F-8</span>
+        <span class="live-badge">LIVE</span>
+      </div>
+      <div class="token-display">
+        <div class="token-label">Now Serving</div>
+        <div class="token-num">B-047</div>
+        <div class="token-service">Profit Payment Collection</div>
+      </div>
+      <div class="queue-list">
+        <div class="queue-item">
+          <span class="q-token">B-048</span>
+          <span class="q-service">New Account (DSC)</span>
+          <span class="q-wait">~8 min</span>
+        </div>
+        <div class="queue-item">
+          <span class="q-token">B-049</span>
+          <span class="q-service">Withdrawal</span>
+          <span class="q-wait">~18 min</span>
+        </div>
+        <div class="queue-item">
+          <span class="q-token">B-050</span>
+          <span class="q-service">Balance Inquiry</span>
+          <span class="q-wait">~26 min</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="steps-section" id="how-it-works">
+  <div class="section-label">Booking Process</div>
+  <div class="section-title">Six Steps to a Confirmed Appointment</div>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">📱</div>
+      <h3>Choose Your Channel</h3>
+      <p>Book via the web portal, smartphone app, or IVR phone system. Walk-ins are assisted by a Facilitator at the branch.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🪪</div>
+      <h3>Verify Identity</h3>
+      <p>Enter your 13-digit CNIC. A 4-digit OTP is sent to your registered mobile number for confirmation.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">📋</div>
+      <h3>Select Service</h3>
+      <p>Choose from 10 CDNS services — account opening, profit collection, withdrawals, and more.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">🤖</div>
+      <h3>AI Recommends Branch</h3>
+      <p>The Geo-Smart Assistant analyzes your location and live congestion scores to suggest the best NSC near you.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-icon">🕐</div>
+      <h3>Confirm Time Slot</h3>
+      <p>Pick an available slot within official hours (9 AM – 3 PM). The Conflict Resolver ensures no double-bookings.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-icon">✅</div>
+      <h3>Receive Confirmation</h3>
+      <p>A unique Reference Number is generated and sent via SMS. Reminders are sent 24 hours and 1 hour before your slot.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AI AGENTS -->
+<section class="agents-section" id="ai-agents">
+  <div class="section-label">Intelligence Layer</div>
+  <div class="section-title" style="margin-bottom: 50px;">Three AI Agents Working in Sync</div>
+  <div class="agents-grid">
+    <div class="agent-card">
+      <div class="agent-number">Agent 01</div>
+      <span class="agent-icon">🗺️</span>
+      <h3>Geo-Smart Assistant</h3>
+      <div class="agent-subtitle">Conversational AI</div>
+      <p>Uses Multilingual BERT for Urdu intent recognition and K-Nearest Neighbours to recommend the optimal branch based on your location and real-time congestion data.</p>
+      <span class="agent-tag">NLP + KNN</span>
+    </div>
+    <div class="agent-card">
+      <div class="agent-number">Agent 02</div>
+      <span class="agent-icon">📊</span>
+      <h3>Load Balancer</h3>
+      <div class="agent-subtitle">Demand Predictor</div>
+      <p>Forecasts visitor surges during pension cycles, Eid holidays, and profit payment dates using XGBoost time-series models trained on historical CDNS visit data.</p>
+      <span class="agent-tag">XGBoost Forecasting</span>
+    </div>
+    <div class="agent-card">
+      <div class="agent-number">Agent 03</div>
+      <span class="agent-icon">⚙️</span>
+      <h3>Conflict Resolver</h3>
+      <div class="agent-subtitle">Intelligent Scheduler</div>
+      <p>Automatically handles double-bookings, staff absences, and emergency closures using Constraint Satisfaction Programming to optimize counter allocation in real time.</p>
+      <span class="agent-tag">CSP Optimization</span>
+    </div>
+  </div>
+</section>
+
+<!-- KPIs -->
+<section class="kpi-section" id="kpis">
+  <div class="section-label">Performance Targets</div>
+  <div class="section-title">Key Metrics We Track</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">⏱️</div>
+      <div class="kpi-value">&lt;15m</div>
+      <div class="kpi-label">Average Wait Time</div>
+      <div class="kpi-target">↓ Target: Under 15 minutes</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📅</div>
+      <div class="kpi-value">80%</div>
+      <div class="kpi-label">Appointment Adherence</div>
+      <div class="kpi-target">↑ Target: Greater than 80%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🤖</div>
+      <div class="kpi-value">85%</div>
+      <div class="kpi-label">AI Forecast Accuracy</div>
+      <div class="kpi-target">↑ Target: Greater than 85%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⭐</div>
+      <div class="kpi-value">4.0+</div>
+      <div class="kpi-label">Citizen Satisfaction</div>
+      <div class="kpi-target">↑ Target: Above 4.0 / 5.0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🚶</div>
+      <div class="kpi-value">10%</div>
+      <div class="kpi-label">No-Show Rate</div>
+      <div class="kpi-target">↓ Target: Below 10%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">💻</div>
+      <div class="kpi-value">60%</div>
+      <div class="kpi-label">Online Adoption</div>
+      <div class="kpi-target">↑ Target: 60% online in 6 months</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🏦</div>
+      <div class="kpi-value">80%</div>
+      <div class="kpi-label">Branch Utilization</div>
+      <div class="kpi-target">→ Target: 75–85% optimal band</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">🕐</div>
+      <div class="kpi-value">99.9%</div>
+      <div class="kpi-label">System Uptime</div>
+      <div class="kpi-target">↑ Target: 99.9% during hours</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to Skip the Queue?</h2>
+  <p>Book your National Savings appointment online in under 2 minutes.</p>
+  <div class="cta-buttons">
+    <a href="booking.html" class="btn-dark">📅 Book Now</a>
+    <a href="staff-login.html" class="btn-outline-dark">Staff Portal →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">AI-AMS — National Savings Pakistan</div>
+  <div class="footer-meta">Central Directorate of National Savings (CDNS) · Confidential — Internal Use Only</div>
+  <div class="footer-version">v1.0 Demo</div>
+</footer>
+
+</body>
+</html>

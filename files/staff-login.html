@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Login — AI-AMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a6b3c; --green-dark: #0f4526; --green-light: #2a8a50;
+    --gold: #c9973a; --gold-light: #e8b84b;
+    --white: #ffffff; --off-white: #f8f6f1;
+    --text: #1a1a1a; --text-muted: #5a6a5e; --border: #d4e8da;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--green-dark);
+    min-height: 100vh;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+
+  .login-left {
+    background: linear-gradient(160deg, var(--green-dark) 0%, var(--green) 100%);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 60px;
+    position: relative; overflow: hidden;
+  }
+
+  .login-left::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(201,151,58,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .login-logo {
+    width: 64px; height: 64px; background: var(--gold);
+    border-radius: 14px; display: flex; align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 28px;
+    font-weight: 700; color: var(--green-dark);
+    margin-bottom: 32px; position: relative; z-index: 1;
+  }
+
+  .login-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px; font-weight: 700; color: var(--white);
+    line-height: 1.15; margin-bottom: 16px;
+    position: relative; z-index: 1;
+  }
+
+  .login-left h1 em { font-style: normal; color: var(--gold-light); }
+
+  .login-left p {
+    font-size: 15px; color: rgba(255,255,255,0.65); line-height: 1.7;
+    max-width: 380px; position: relative; z-index: 1;
+  }
+
+  .role-pills {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 40px; position: relative; z-index: 1;
+  }
+
+  .role-pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.75); font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px;
+    letter-spacing: 0.3px;
+  }
+
+  .login-right {
+    background: var(--off-white);
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 60px;
+  }
+
+  .login-form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; color: var(--green-dark);
+    margin-bottom: 6px;
+  }
+
+  .login-form-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 36px; }
+
+  .form-group { margin-bottom: 20px; }
+
+  label {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--green-dark); margin-bottom: 8px;
+  }
+
+  input, select {
+    width: 100%; padding: 13px 16px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 15px; font-family: 'DM Sans', sans-serif;
+    background: var(--white); color: var(--text);
+    outline: none; transition: all 0.2s;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(26,107,60,0.1);
+  }
+
+  .role-selector {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .role-option {
+    border: 2px solid var(--border); border-radius: 10px;
+    padding: 14px; cursor: pointer; text-align: center;
+    transition: all 0.2s; background: var(--white);
+  }
+
+  .role-option:hover { border-color: var(--green-light); }
+  .role-option.selected { border-color: var(--green); background: #e8f8ef; }
+  .role-option input { display: none; }
+
+  .role-option-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+  .role-option-name { font-size: 13px; font-weight: 700; color: var(--green-dark); }
+  .role-option-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .btn-login {
+    width: 100%; background: var(--green);
+    color: var(--white); padding: 15px;
+    border: none; border-radius: 8px;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.25s; margin-bottom: 16px;
+  }
+  .btn-login:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+  .login-back {
+    text-align: center; font-size: 13px; color: var(--text-muted);
+  }
+  .login-back a { color: var(--green); font-weight: 600; text-decoration: none; }
+
+  .demo-note {
+    background: #fff8e0; border: 1px solid var(--gold);
+    border-radius: 8px; padding: 12px 16px;
+    font-size: 12px; color: #7a5500; margin-bottom: 24px;
+  }
+
+  @media (max-width: 768px) {
+    body { grid-template-columns: 1fr; }
+    .login-left { display: none; }
+    .login-right { padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-left">
+  <div class="login-logo">NS</div>
+  <h1>Staff <em>Portal</em> — AI-AMS</h1>
+  <p>Secure access for National Savings Centre staff, branch managers, and regional directors.</p>
+  <div class="role-pills">
+    <span class="role-pill">Counter Officer</span>
+    <span class="role-pill">Facilitator</span>
+    <span class="role-pill">Branch Manager</span>
+    <span class="role-pill">Regional Director</span>
+    <span class="role-pill">System Admin</span>
+  </div>
+</div>
+
+<div class="login-right">
+  <div class="login-form-title">Sign In</div>
+  <div class="login-form-sub">Enter your credentials to access the staff dashboard.</div>
+
+  <div class="demo-note">
+    🧪 <strong>Demo Mode:</strong> Click any role below and press Sign In to enter the dashboard.
+  </div>
+
+  <div style="margin-bottom: 16px;">
+    <label>Select Your Role</label>
+  </div>
+  <div class="role-selector">
+    <label class="role-option selected" onclick="selectRole(this, 'counter')">
+      <input type="radio" name="role" value="counter">
+      <span class="role-option-icon">🖥️</span>
+      <div class="role-option-name">Counter Staff</div>
+      <div class="role-option-desc">Queue & service</div>
+    </label>
+    <label class="role-option" onclick="selectRole(this, 'manager')">
+      <input type="radio" name="role" value="manager">
+      <span class="role-option-icon">👔</span>
+      <div class="role-option-name">Branch Manager</div>
+      <div class="role-option-desc">Branch oversight</div>
+    </label>
+    <label class="role-option" onclick="selectRole(this, 'counter')">
+      <input type="radio" name="role" value="facilitator">
+      <span class="role-option-icon">🤝</span>
+      <div class="role-option-name">Facilitator</div>
+      <div class="role-option-desc">Walk-in registration</div>
+    </label>
+    <label class="role-option" onclick="selectRole(this, 'manager')">
+      <input type="radio" name="role" value="regional">
+      <span class="role-option-icon">📊</span>
+      <div class="role-option-name">Regional Director</div>
+      <div class="role-option-desc">Regional analytics</div>
+    </label>
+  </div>
+
+  <div class="form-group">
+    <label>Employee ID</label>
+    <input type="text" placeholder="e.g. CDNS-0421" value="CDNS-0421">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" placeholder="••••••••" value="••••••••">
+  </div>
+
+  <button class="btn-login" onclick="doLogin()">Sign In →</button>
+  <div class="login-back">
+    Not staff? <a href="index.html">Book as Citizen →</a>
+  </div>
+</div>
+
+<script>
+  let selectedRole = 'counter';
+
+  function selectRole(card, role) {
+    document.querySelectorAll('.role-option').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedRole = role;
+  }
+
+  function doLogin() {
+    if (selectedRole === 'manager') {
+      window.location.href = 'manager.html';
+    } else {
+      window.location.href = 'counter.html';
+    }
+  }
+</script>
+</body>
+</html>

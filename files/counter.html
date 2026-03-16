@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Counter Dashboard — AI-AMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a6b3c; --green-dark: #0f4526; --green-light: #2a8a50;
+    --gold: #c9973a; --gold-light: #e8b84b;
+    --white: #ffffff; --off-white: #f5f7f5;
+    --text: #1a1a1a; --text-muted: #5a6a5e; --border: #d4e8da;
+    --sidebar-w: 260px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--green-dark);
+    display: flex; flex-direction: column;
+    border-right: 2px solid var(--gold);
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+  }
+
+  .sb-brand {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .sb-logo {
+    width: 40px; height: 40px; background: var(--gold);
+    border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700; color: var(--green-dark);
+    flex-shrink: 0;
+  }
+
+  .sb-title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: var(--white); }
+  .sb-sub { font-size: 11px; color: var(--gold-light); }
+
+  .sb-user {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sb-user-name { font-size: 13px; font-weight: 700; color: var(--white); }
+  .sb-user-role { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .sb-user-branch { font-size: 11px; color: var(--gold); margin-top: 2px; }
+
+  .sb-nav {
+    padding: 16px 12px; flex: 1;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+
+  .sb-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .sb-nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+  .sb-nav-item.active { background: rgba(201,151,58,0.2); color: var(--gold-light); }
+
+  .sb-nav-icon { font-size: 16px; }
+
+  .sb-nav-label { font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: rgba(255,255,255,0.25);
+    padding: 16px 12px 6px; }
+
+  .sb-bottom {
+    padding: 16px 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* MAIN */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+
+  .topbar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .topbar-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700; color: var(--green-dark);
+  }
+
+  .topbar-meta { font-size: 13px; color: var(--text-muted); }
+
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+  .live-badge {
+    background: #e8f8ef; color: var(--green);
+    font-size: 11px; font-weight: 700;
+    padding: 5px 12px; border-radius: 20px;
+    display: flex; align-items: center; gap: 6px;
+    border: 1px solid rgba(26,107,60,0.2);
+  }
+  .live-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  .content { padding: 28px; flex: 1; }
+
+  /* COUNTER WIDGET */
+  .counter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+
+  .counter-card {
+    background: var(--white); border-radius: 14px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+
+  .cc-header {
+    padding: 16px 20px;
+    background: var(--green-dark);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .cc-header-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); letter-spacing: 0.3px; }
+  .cc-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .cc-status.serving { background: rgba(201,151,58,0.3); color: var(--gold-light); }
+  .cc-status.idle { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+
+  .cc-body { padding: 24px; }
+
+  .cc-token {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px; font-weight: 700; color: var(--green-dark);
+    line-height: 1; margin-bottom: 8px;
+  }
+
+  .cc-service { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
+  .cc-cnic { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .cc-time { font-size: 12px; color: var(--text-muted); }
+
+  .cc-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  .btn-complete {
+    flex: 1; background: var(--green); color: var(--white);
+    padding: 11px; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-complete:hover { background: var(--green-dark); }
+
+  .btn-noshow {
+    background: #fff0f0; color: #d94040;
+    padding: 11px 16px; border: 1px solid #fdc0c0;
+    border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-noshow:hover { background: #ffe0e0; }
+
+  .btn-next-token {
+    background: var(--off-white); color: var(--green-dark);
+    padding: 11px 16px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-next-token:hover { border-color: var(--green); }
+
+  /* QUEUE TABLE */
+  .queue-section { background: var(--white); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+
+  .qs-header {
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .qs-title { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+  .qs-count { font-size: 13px; color: var(--text-muted); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 12px 20px; text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-muted);
+    background: #fafcfa;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 14px 20px;
+    font-size: 13px; color: var(--text);
+    border-bottom: 1px solid rgba(212,232,218,0.4);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f8fbf8; }
+
+  .token-badge {
+    font-weight: 700; font-size: 15px; color: var(--green-dark);
+    font-family: 'Playfair Display', serif;
+  }
+
+  .status-pill {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .s-booked { background: #e8f0fe; color: #1a56c4; }
+  .s-checkedin { background: #e8f8ef; color: #1a6b3c; }
+  .s-serving { background: #fff8e0; color: #9c6d00; }
+  .s-completed { background: #f0f0f0; color: #888; }
+  .s-noshow { background: #ffe8e8; color: #d94040; }
+
+  .channel-pill { font-size: 11px; color: var(--text-muted); background: var(--off-white); padding: 3px 10px; border-radius: 20px; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--white); border-radius: 12px; padding: 18px 20px;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .stat-icon { font-size: 24px; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--green-dark); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">NS</div>
+    <div>
+      <div class="sb-title">AI-AMS</div>
+      <div class="sb-sub">Counter Dashboard</div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-name">Muhammad Asif</div>
+    <div class="sb-user-role">Counter Officer · Counter 2</div>
+    <div class="sb-user-branch">NSC F-8 Markaz, Islamabad</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-nav-label">Operations</div>
+    <a class="sb-nav-item active" href="counter.html">
+      <span class="sb-nav-icon">🖥️</span> My Counter
+    </a>
+    <a class="sb-nav-item" href="counter.html">
+      <span class="sb-nav-icon">📋</span> Full Queue
+    </a>
+    <a class="sb-nav-item" href="counter.html">
+      <span class="sb-nav-icon">🚶</span> Walk-in Register
+    </a>
+    <div class="sb-nav-label">Other</div>
+    <a class="sb-nav-item" href="manager.html">
+      <span class="sb-nav-icon">📊</span> Manager View
+    </a>
+    <a class="sb-nav-item" href="staff-login.html">
+      <span class="sb-nav-icon">🔐</span> Change Role
+    </a>
+  </div>
+  <div class="sb-bottom">
+    <a class="sb-nav-item" href="index.html">
+      <span class="sb-nav-icon">🏠</span> Main Website
+    </a>
+    <a class="sb-nav-item" href="staff-login.html">
+      <span class="sb-nav-icon">🚪</span> Log Out
+    </a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Counter 2 — Live Queue</div>
+      <div class="topbar-meta">NSC F-8 Markaz, Islamabad · <span id="clock"></span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><span class="live-dot"></span> Live</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <div>
+          <div class="stat-num" id="s-waiting">12</div>
+          <div class="stat-label">Waiting</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">✅</span>
+        <div>
+          <div class="stat-num">23</div>
+          <div class="stat-label">Served Today</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">⏱️</span>
+        <div>
+          <div class="stat-num">11m</div>
+          <div class="stat-label">Avg Wait</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🚫</span>
+        <div>
+          <div class="stat-num">2</div>
+          <div class="stat-label">No-Shows</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNTERS -->
+    <div class="counter-grid">
+      <div class="counter-card">
+        <div class="cc-header">
+          <span class="cc-header-title">Counter 2 — Your Counter</span>
+          <span class="cc-status serving">Serving</span>
+        </div>
+        <div class="cc-body">
+          <div class="cc-token" id="current-token">B-047</div>
+          <div class="cc-service" id="current-service">Profit Payment Collection</div>
+          <div class="cc-cnic">CNIC: 3520X-XXXXXXX-X (masked)</div>
+          <div class="cc-time" id="serve-time">Started: 09:42 AM · Elapsed: <span id="elapsed">00:00</span></div>
+          <div class="cc-actions">
+            <button class="btn-complete" onclick="completeService()">✓ Complete Service</button>
+            <button class="btn-noshow" onclick="markNoShow()">No-Show</button>
+          </div>
+          <div style="margin-top: 12px;">
+            <button class="btn-next-token" onclick="callNext()" style="width: 100%">📣 Call Next Token</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="counter-card">
+        <div class="cc-header">
+          <span class="cc-header-title">Counter 3 — Colleague</span>
+          <span class="cc-status serving">Serving</span>
+        </div>
+        <div class="cc-body">
+          <div class="cc-token">B-045</div>
+          <div class="cc-service">New Account Opening (DSC)</div>
+          <div class="cc-cnic">CNIC: 4210X-XXXXXXX-X (masked)</div>
+          <div class="cc-time">Started: 09:35 AM</div>
+          <div class="cc-actions" style="margin-top: 20px;">
+            <div style="font-size: 12px; color: var(--text-muted); font-style: italic;">Read-only view</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUEUE TABLE -->
+    <div class="queue-section">
+      <div class="qs-header">
+        <span class="qs-title">Today's Queue</span>
+        <span class="qs-count" id="queue-count">12 remaining</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Service</th>
+            <th>Booked Time</th>
+            <th>Channel</th>
+            <th>Status</th>
+            <th>Wait</th>
+          </tr>
+        </thead>
+        <tbody id="queue-tbody">
+          <!-- JS fills this -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // Elapsed timer
+  let elapsed = 0;
+  setInterval(() => {
+    elapsed++;
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('elapsed').textContent = m + ':' + s;
+  }, 1000);
+
+  // Queue data
+  let queue = [
+    { token: 'B-048', service: 'Withdrawal / Encashment', time: '09:30', channel: 'App', status: 'checked-in', wait: '~3 min' },
+    { token: 'B-049', service: 'Balance Inquiry', time: '09:45', channel: 'Web', status: 'booked', wait: '~11 min' },
+    { token: 'B-050', service: 'New Account (SSC)', time: '10:00', channel: 'App', status: 'booked', wait: '~19 min' },
+    { token: 'B-051', service: 'Profit Payment', time: '10:00', channel: 'IVR', status: 'booked', wait: '~22 min' },
+    { token: 'B-052', service: 'Nominee Change', time: '10:15', channel: 'Web', status: 'booked', wait: '~28 min' },
+    { token: 'B-053', service: 'General Inquiry', time: '10:15', channel: 'Walk-in', status: 'booked', wait: '~31 min' },
+    { token: 'B-054', service: 'Withdrawal', time: '10:30', channel: 'App', status: 'booked', wait: '~37 min' },
+    { token: 'B-055', service: 'Profit Payment', time: '10:30', channel: 'IVR', status: 'booked', wait: '~42 min' },
+  ];
+
+  const statusMap = {
+    'checked-in': ['s-checkedin', 'Checked In'],
+    'booked': ['s-booked', 'Booked'],
+    'serving': ['s-serving', 'Serving'],
+    'completed': ['s-completed', 'Completed'],
+    'no-show': ['s-noshow', 'No-Show'],
+  };
+
+  let tokenCounter = 48;
+
+  function renderQueue() {
+    const tbody = document.getElementById('queue-tbody');
+    tbody.innerHTML = queue.map(r => {
+      const [cls, label] = statusMap[r.status] || ['s-booked', r.status];
+      return `<tr>
+        <td><span class="token-badge">${r.token}</span></td>
+        <td>${r.service}</td>
+        <td>${r.time}</td>
+        <td><span class="channel-pill">${r.channel}</span></td>
+        <td><span class="status-pill ${cls}">${label}</span></td>
+        <td style="color: var(--text-muted); font-size: 12px;">${r.wait}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('queue-count').textContent = queue.length + ' remaining';
+    document.getElementById('s-waiting').textContent = queue.length;
+  }
+
+  renderQueue();
+
+  function completeService() {
+    if (queue.length > 0) {
+      queue.shift();
+      renderQueue();
+      if (queue.length > 0) {
+        const next = queue[0];
+        document.getElementById('current-token').textContent = next.token;
+        document.getElementById('current-service').textContent = next.service;
+        elapsed = 0;
+      }
+    }
+  }
+
+  function markNoShow() {
+    if (queue.length > 0) {
+      queue.shift();
+      renderQueue();
+    }
+  }
+
+  function callNext() {
+    if (queue.length > 0) {
+      const next = queue[0];
+      next.status = 'serving';
+      document.getElementById('current-token').textContent = next.token;
+      document.getElementById('current-service').textContent = next.service;
+      elapsed = 0;
+      renderQueue();
+      alert('📣 Calling: ' + next.token + ' — ' + next.service);
+    }
+  }
+</script>
+</body>
+</html>

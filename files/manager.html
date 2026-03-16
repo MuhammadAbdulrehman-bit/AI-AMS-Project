@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manager Dashboard — AI-AMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a6b3c; --green-dark: #0f4526; --green-light: #2a8a50;
+    --gold: #c9973a; --gold-light: #e8b84b;
+    --white: #ffffff; --off-white: #f5f7f5;
+    --text: #1a1a1a; --text-muted: #5a6a5e; --border: #d4e8da;
+    --sidebar-w: 260px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--text); display: flex; min-height: 100vh; }
+
+  /* reuse sidebar styles */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--green-dark);
+    display: flex; flex-direction: column;
+    border-right: 2px solid var(--gold);
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+  }
+  .sb-brand { padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
+  .sb-logo { width: 40px; height: 40px; background: var(--gold); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--green-dark); flex-shrink: 0; }
+  .sb-title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: var(--white); }
+  .sb-sub { font-size: 11px; color: var(--gold-light); }
+  .sb-user { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sb-user-name { font-size: 13px; font-weight: 700; color: var(--white); }
+  .sb-user-role { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .sb-user-branch { font-size: 11px; color: var(--gold); margin-top: 2px; }
+  .sb-nav { padding: 16px 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.6); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+  .sb-nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+  .sb-nav-item.active { background: rgba(201,151,58,0.2); color: var(--gold-light); }
+  .sb-nav-icon { font-size: 16px; }
+  .sb-nav-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.25); padding: 16px 12px 6px; }
+  .sb-bottom { padding: 16px 12px; border-top: 1px solid rgba(255,255,255,0.08); }
+
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+
+  .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--green-dark); }
+  .topbar-meta { font-size: 13px; color: var(--text-muted); }
+  .live-badge { background: #e8f8ef; color: var(--green); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(26,107,60,0.2); }
+  .live-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+  .content { padding: 28px; }
+
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
+
+  .kpi-card {
+    background: var(--white); border-radius: 14px; padding: 22px 20px;
+    border: 1px solid var(--border);
+  }
+
+  .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .kpi-icon { font-size: 24px; }
+  .kpi-trend { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .trend-good { background: #e8f8ef; color: #1a6b3c; }
+  .trend-warn { background: #fff8e0; color: #9c6d00; }
+  .trend-bad { background: #ffe8e8; color: #d94040; }
+
+  .kpi-value { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--green-dark); line-height: 1; margin-bottom: 4px; }
+  .kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .kpi-target { font-size: 11px; color: var(--text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .kpi-target span { color: var(--green); font-weight: 700; }
+
+  /* CHARTS ROW */
+  .charts-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+  .chart-card { background: var(--white); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+
+  .chart-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .chart-title { font-size: 14px; font-weight: 700; color: var(--green-dark); }
+  .chart-sub { font-size: 12px; color: var(--text-muted); }
+
+  .chart-body { padding: 22px; }
+
+  /* Bar Chart */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; gap: 3px; }
+  .bar { border-radius: 4px 4px 0 0; transition: all 0.3s; cursor: pointer; flex: 1; }
+  .bar:hover { opacity: 0.8; }
+  .bar-online { background: var(--green); }
+  .bar-walkin { background: rgba(26,107,60,0.2); }
+  .bar-label { font-size: 10px; color: var(--text-muted); text-align: center; }
+
+  .bar-legend { display: flex; gap: 16px; margin-top: 12px; }
+  .bar-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* Donut chart */
+  .donut-wrap { display: flex; align-items: center; gap: 24px; }
+  svg.donut { overflow: visible; }
+  .donut-legend { display: flex; flex-direction: column; gap: 10px; }
+  .dl-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .dl-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .dl-label { color: var(--text-muted); }
+  .dl-val { font-weight: 700; color: var(--green-dark); margin-left: auto; padding-left: 16px; }
+
+  /* COUNTERS STATUS */
+  .counters-section { background: var(--white); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 24px; }
+  .cs-header { padding: 18px 22px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .cs-title { font-size: 14px; font-weight: 700; color: var(--green-dark); }
+
+  .btn-emergency {
+    background: #d94040; color: white; border: none;
+    padding: 8px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .btn-emergency:hover { background: #b03030; }
+
+  .counters-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); }
+
+  .counter-tile { background: var(--white); padding: 18px 14px; text-align: center; }
+  .ct-num { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--green-dark); margin-bottom: 4px; }
+  .ct-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+  .ct-status { display: inline-block; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .ct-active { background: #e8f8ef; color: #1a6b3c; }
+  .ct-idle { background: #f0f0f0; color: #888; }
+  .ct-break { background: #fff8e0; color: #9c6d00; }
+
+  /* AI ALERTS */
+  .alerts-section { background: var(--white); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+  .alerts-header { padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .alerts-title { font-size: 14px; font-weight: 700; color: var(--green-dark); }
+
+  .alert-item { padding: 14px 22px; border-bottom: 1px solid rgba(212,232,218,0.4); display: flex; align-items: flex-start; gap: 12px; }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon { font-size: 18px; margin-top: 1px; flex-shrink: 0; }
+  .alert-text { flex: 1; font-size: 13px; color: var(--text); line-height: 1.5; }
+  .alert-text strong { color: var(--green-dark); }
+  .alert-time { font-size: 11px; color: var(--text-muted); }
+  .alert-type { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+  .at-forecast { background: #e8f0fe; color: #1a56c4; }
+  .at-warning { background: #fff8e0; color: #9c6d00; }
+  .at-info { background: #e8f8ef; color: #1a6b3c; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">NS</div>
+    <div>
+      <div class="sb-title">AI-AMS</div>
+      <div class="sb-sub">Manager Dashboard</div>
+    </div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-name">Mr. Zafar Ahmed</div>
+    <div class="sb-user-role">Branch Manager</div>
+    <div class="sb-user-branch">NSC F-8 Markaz, Islamabad</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-nav-label">Dashboard</div>
+    <a class="sb-nav-item active" href="manager.html">
+      <span class="sb-nav-icon">📊</span> Overview
+    </a>
+    <a class="sb-nav-item" href="manager.html">
+      <span class="sb-nav-icon">📅</span> Appointments
+    </a>
+    <a class="sb-nav-item" href="manager.html">
+      <span class="sb-nav-icon">👥</span> Staff Management
+    </a>
+    <div class="sb-nav-label">Operations</div>
+    <a class="sb-nav-item" href="counter.html">
+      <span class="sb-nav-icon">🖥️</span> Counter View
+    </a>
+    <a class="sb-nav-item" href="manager.html">
+      <span class="sb-nav-icon">📈</span> Reports
+    </a>
+    <div class="sb-nav-label">Other</div>
+    <a class="sb-nav-item" href="staff-login.html">
+      <span class="sb-nav-icon">🔐</span> Change Role
+    </a>
+  </div>
+  <div class="sb-bottom">
+    <a class="sb-nav-item" href="index.html">
+      <span class="sb-nav-icon">🏠</span> Main Website
+    </a>
+    <a class="sb-nav-item" href="staff-login.html">
+      <span class="sb-nav-icon">🚪</span> Log Out
+    </a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Branch Manager Overview</div>
+      <div class="topbar-meta">NSC F-8 Markaz, Islamabad · <span id="clock"></span></div>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span> Live</div>
+  </div>
+
+  <div class="content">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">⏱️</span>
+          <span class="kpi-trend trend-good">↓ On Target</span>
+        </div>
+        <div class="kpi-value">11m</div>
+        <div class="kpi-label">Avg Wait Time</div>
+        <div class="kpi-target">Target: <span>&lt;15 min</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">📅</span>
+          <span class="kpi-trend trend-good">↑ Good</span>
+        </div>
+        <div class="kpi-value">84%</div>
+        <div class="kpi-label">Adherence Rate</div>
+        <div class="kpi-target">Target: <span>&gt;80%</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">🚫</span>
+          <span class="kpi-trend trend-warn">⚠ Watch</span>
+        </div>
+        <div class="kpi-value">12%</div>
+        <div class="kpi-label">No-Show Rate</div>
+        <div class="kpi-target">Target: <span>&lt;10%</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">🏦</span>
+          <span class="kpi-trend trend-good">↑ Optimal</span>
+        </div>
+        <div class="kpi-value">78%</div>
+        <div class="kpi-label">Branch Utilization</div>
+        <div class="kpi-target">Target: <span>75–85%</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">💻</span>
+          <span class="kpi-trend trend-good">↑ Growing</span>
+        </div>
+        <div class="kpi-value">54%</div>
+        <div class="kpi-label">Online Adoption</div>
+        <div class="kpi-target">Target: <span>60% in 6mo</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">⭐</span>
+          <span class="kpi-trend trend-good">↑ Above Target</span>
+        </div>
+        <div class="kpi-value">4.3</div>
+        <div class="kpi-label">CSAT Score</div>
+        <div class="kpi-target">Target: <span>&gt;4.0 / 5.0</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">🤖</span>
+          <span class="kpi-trend trend-good">↑ Accurate</span>
+        </div>
+        <div class="kpi-value">88%</div>
+        <div class="kpi-label">AI Forecast Accuracy</div>
+        <div class="kpi-target">Target: <span>&gt;85%</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <span class="kpi-icon">👥</span>
+          <span class="kpi-trend trend-good">—</span>
+        </div>
+        <div class="kpi-value">47</div>
+        <div class="kpi-label">Served Today</div>
+        <div class="kpi-target">Expected: <span>~62</span></div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Hourly Visitor Volume — Today</div>
+            <div class="chart-sub">Online bookings vs Walk-ins</div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="bar-chart" id="bar-chart"></div>
+          <div class="bar-legend">
+            <div class="bar-legend-item"><span class="legend-dot" style="background: var(--green)"></span>Online</div>
+            <div class="bar-legend-item"><span class="legend-dot" style="background: rgba(26,107,60,0.2)"></span>Walk-in</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Service Mix</div>
+            <div class="chart-sub">Today's appointments</div>
+          </div>
+        </div>
+        <div class="chart-body">
+          <div class="donut-wrap">
+            <svg class="donut" width="130" height="130" viewBox="0 0 130 130" id="donut-svg"></svg>
+            <div class="donut-legend" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNTERS -->
+    <div class="counters-section">
+      <div class="cs-header">
+        <span class="cs-title">Counter Status (5 Counters Active)</span>
+        <button class="btn-emergency" onclick="emergencyClosure()">⚠ Emergency Closure</button>
+      </div>
+      <div class="counters-grid">
+        <div class="counter-tile">
+          <div class="ct-num">C-1</div>
+          <div class="ct-label">Aisha Noor</div>
+          <span class="ct-status ct-active">Serving B-043</span>
+        </div>
+        <div class="counter-tile">
+          <div class="ct-num">C-2</div>
+          <div class="ct-label">M. Asif</div>
+          <span class="ct-status ct-active">Serving B-047</span>
+        </div>
+        <div class="counter-tile">
+          <div class="ct-num">C-3</div>
+          <div class="ct-label">Bilal Khan</div>
+          <span class="ct-status ct-active">Serving B-045</span>
+        </div>
+        <div class="counter-tile">
+          <div class="ct-num">C-4</div>
+          <div class="ct-label">Sara Malik</div>
+          <span class="ct-status ct-break">On Break</span>
+        </div>
+        <div class="counter-tile">
+          <div class="ct-num">C-5</div>
+          <div class="ct-label">Tariq Mehmood</div>
+          <span class="ct-status ct-idle">Idle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI ALERTS -->
+    <div class="alerts-section">
+      <div class="alerts-header">
+        <div class="alerts-title">🤖 AI Agent Alerts & Forecasts</div>
+      </div>
+      <div class="alert-item">
+        <span class="alert-icon">📊</span>
+        <div>
+          <div class="alert-text">
+            <strong>Load Balancer:</strong> Predicts 35–40 additional walk-ins between 11:00–12:00 AM due to the monthly profit payment cycle starting today.
+            <span class="alert-type at-forecast">Forecast</span>
+          </div>
+          <div class="alert-time">Generated 9:15 AM</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <div class="alert-text">
+            <strong>Conflict Resolver:</strong> No-show rate is 12%, above the 10% threshold. 3 citizens have been flagged under the anti-spam 3-strike rule.
+            <span class="alert-type at-warning">Warning</span>
+          </div>
+          <div class="alert-time">Generated 9:30 AM</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <span class="alert-icon">✅</span>
+        <div>
+          <div class="alert-text">
+            <strong>Geo-Smart Assistant:</strong> NSC G-9 is at high congestion (91%). The agent is automatically redirecting new bookings to F-8 Markaz and I-8 Markaz.
+            <span class="alert-type at-info">Info</span>
+          </div>
+          <div class="alert-time">Generated 9:48 AM</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <span class="alert-icon">💡</span>
+        <div>
+          <div class="alert-text">
+            <strong>System Recommendation:</strong> Consider activating Counter 5 (currently idle) to reduce projected wait time from 18 min → 11 min during the upcoming peak.
+            <span class="alert-type at-forecast">Recommendation</span>
+          </div>
+          <div class="alert-time">Generated 9:52 AM</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // Bar chart
+  const hours = ['9AM','10AM','11AM','12PM','1PM','2PM','3PM'];
+  const onlineData = [8, 12, 18, 15, 10, 7, 3];
+  const walkinData = [4, 6, 10, 8, 5, 3, 1];
+  const maxVal = Math.max(...onlineData.map((v,i) => v + walkinData[i]));
+  const bc = document.getElementById('bar-chart');
+  hours.forEach((h, i) => {
+    const onlinePct = (onlineData[i] / maxVal) * 140;
+    const walkinPct = (walkinData[i] / maxVal) * 140;
+    const g = document.createElement('div');
+    g.className = 'bar-group';
+    g.innerHTML = `
+      <div class="bar-wrap">
+        <div class="bar bar-online" style="height:${onlinePct}px" title="Online: ${onlineData[i]}"></div>
+        <div class="bar bar-walkin" style="height:${walkinPct}px" title="Walk-in: ${walkinData[i]}"></div>
+      </div>
+      <div class="bar-label">${h}</div>
+    `;
+    bc.appendChild(g);
+  });
+
+  // Donut chart
+  const services = [
+    { name: 'Profit Payment', pct: 32, color: '#1a6b3c' },
+    { name: 'New Account', pct: 24, color: '#c9973a' },
+    { name: 'Withdrawal', pct: 18, color: '#2a8a50' },
+    { name: 'Inquiry', pct: 14, color: '#e8b84b' },
+    { name: 'Other', pct: 12, color: '#d4e8da' },
+  ];
+  let cumAngle = -Math.PI / 2;
+  const cx = 65, cy = 65, r = 50, innerR = 32;
+  const paths = [];
+  services.forEach(s => {
+    const angle = (s.pct / 100) * Math.PI * 2;
+    const x1 = cx + r * Math.cos(cumAngle), y1 = cy + r * Math.sin(cumAngle);
+    const x2 = cx + r * Math.cos(cumAngle + angle), y2 = cy + r * Math.sin(cumAngle + angle);
+    const x3 = cx + innerR * Math.cos(cumAngle + angle), y3 = cy + innerR * Math.sin(cumAngle + angle);
+    const x4 = cx + innerR * Math.cos(cumAngle), y4 = cy + innerR * Math.sin(cumAngle);
+    const large = angle > Math.PI ? 1 : 0;
+    paths.push(`<path d="M${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} L${x3},${y3} A${innerR},${innerR} 0 ${large},0 ${x4},${y4} Z" fill="${s.color}" stroke="white" stroke-width="2"/>`);
+    cumAngle += angle;
+  });
+  document.getElementById('donut-svg').innerHTML = paths.join('');
+  const legend = document.getElementById('donut-legend');
+  services.forEach(s => {
+    legend.innerHTML += `<div class="dl-item"><span class="dl-dot" style="background:${s.color}"></span><span class="dl-label">${s.name}</span><span class="dl-val">${s.pct}%</span></div>`;
+  });
+
+  function emergencyClosure() {
+    if (confirm('⚠ Trigger Emergency Closure for NSC F-8 Markaz?\n\nThis will:\n• Cancel all remaining appointments today\n• Send SMS to all affected citizens\n• Redirect bookings to nearby branches')) {
+      alert('✅ Emergency Closure activated.\n\nSMS notifications sent to 12 affected citizens.\nConflict Resolver is rescheduling their appointments.');
+    }
+  }
+</script>
+</body>
+</html>
